@@ -28,6 +28,7 @@
 		"@sveltejs/adapter-vercel": "^6.2.0",
 		"@tailwindcss/vite": "^4.1.17",
 		"asciinema-player": "^3.12.1",
+		"figlet": "^1.9.4",
 		"tailwindcss": "^4.1.17"
 	}
 }
