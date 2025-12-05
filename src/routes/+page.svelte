@@ -10,6 +10,6 @@
 	});
 </script>
 
-<main class="min-h-screen flex items-center justify-center">
+<div class="flex flex-1 items-center justify-center py-12 px-4">
 	<div class="max-w-2xl w-full" bind:this={container}></div>
-</main>
+</div>

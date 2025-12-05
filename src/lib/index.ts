@@ -1,1 +1,4 @@
-// place files you want to import through the `$lib` alias in this folder.
+// Components
+export * from './components';
+
+// Add other exports as needed (utils, stores, etc.)

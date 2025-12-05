@@ -1,1 +1,106 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* ============================================
+   THEME CONFIGURATION (Tailwind v4)
+   ============================================ */
+
+@theme {
+	/* Color Palette - Neutral base */
+	--color-background: oklch(99% 0 0);
+	--color-foreground: oklch(15% 0 0);
+	--color-muted: oklch(96% 0 0);
+	--color-muted-foreground: oklch(45% 0 0);
+	--color-border: oklch(90% 0 0);
+
+	/* Primary - Adjust hue to match your brand */
+	--color-primary: oklch(55% 0.2 250);
+	--color-primary-foreground: oklch(98% 0 0);
+	--color-primary-hover: oklch(48% 0.2 250);
+
+	/* Accent */
+	--color-accent: oklch(95% 0.03 250);
+	--color-accent-foreground: oklch(25% 0.1 250);
+
+	/* Semantic */
+	--color-destructive: oklch(55% 0.2 25);
+	--color-destructive-foreground: oklch(98% 0 0);
+	--color-success: oklch(55% 0.2 145);
+	--color-success-foreground: oklch(98% 0 0);
+
+	/* Typography Scale */
+	--font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+	--font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+	--text-xs: 0.75rem;
+	--text-sm: 0.875rem;
+	--text-base: 1rem;
+	--text-lg: 1.125rem;
+	--text-xl: 1.25rem;
+	--text-2xl: 1.5rem;
+	--text-3xl: 1.875rem;
+	--text-4xl: 2.25rem;
+
+	/* Spacing Scale (extending defaults) */
+	--spacing-18: 4.5rem;
+	--spacing-88: 22rem;
+	--spacing-128: 32rem;
+
+	/* Border Radius */
+	--radius-sm: 0.25rem;
+	--radius-md: 0.375rem;
+	--radius-lg: 0.5rem;
+	--radius-xl: 0.75rem;
+	--radius-2xl: 1rem;
+
+	/* Shadows */
+	--shadow-sm: 0 1px 2px 0 oklch(0% 0 0 / 0.05);
+	--shadow-md: 0 4px 6px -1px oklch(0% 0 0 / 0.1), 0 2px 4px -2px oklch(0% 0 0 / 0.1);
+	--shadow-lg: 0 10px 15px -3px oklch(0% 0 0 / 0.1), 0 4px 6px -4px oklch(0% 0 0 / 0.1);
+
+	/* Transitions */
+	--transition-fast: 150ms;
+	--transition-base: 200ms;
+	--transition-slow: 300ms;
+
+	/* Container */
+	--container-sm: 40rem;
+	--container-md: 48rem;
+	--container-lg: 64rem;
+	--container-xl: 80rem;
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+	@theme {
+		--color-background: oklch(12% 0 0);
+		--color-foreground: oklch(95% 0 0);
+		--color-muted: oklch(18% 0 0);
+		--color-muted-foreground: oklch(65% 0 0);
+		--color-border: oklch(25% 0 0);
+
+		--color-primary: oklch(65% 0.2 250);
+		--color-primary-hover: oklch(72% 0.2 250);
+
+		--color-accent: oklch(20% 0.05 250);
+		--color-accent-foreground: oklch(90% 0.05 250);
+	}
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	background-color: var(--color-background);
+	color: var(--color-foreground);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}

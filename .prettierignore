@@ -1,0 +1,11 @@
+# Package manager
+node_modules
+package-lock.json
+
+# Build output
+.svelte-kit
+build
+dist
+
+# Generated
+.vercel
