@@ -14,8 +14,8 @@
 	let container: HTMLDivElement;
 	let playing = $state(false);
 
-	// ANSI color code to CSS class mapping
-	const ansiColors: Record<number, string> = {
+	// ANSI foreground color code to CSS class mapping
+	const fgColors: Record<number, string> = {
 		30: 'text-black',
 		31: 'text-red-500',
 		32: 'text-green-500',
@@ -24,6 +24,7 @@
 		35: 'text-purple-500',
 		36: 'text-cyan-500',
 		37: 'text-white',
+		39: '', // default foreground
 		90: 'text-gray-500',
 		91: 'text-red-400',
 		92: 'text-green-400',
@@ -34,55 +35,161 @@
 		97: 'text-gray-100'
 	};
 
+	// ANSI background color code to CSS class mapping
+	const bgColors: Record<number, string> = {
+		40: 'bg-black',
+		41: 'bg-red-500',
+		42: 'bg-green-500',
+		43: 'bg-yellow-500',
+		44: 'bg-blue-500',
+		45: 'bg-purple-500',
+		46: 'bg-cyan-500',
+		47: 'bg-white',
+		49: '', // default background
+		100: 'bg-gray-500',
+		101: 'bg-red-400',
+		102: 'bg-green-400',
+		103: 'bg-yellow-400',
+		104: 'bg-blue-400',
+		105: 'bg-purple-400',
+		106: 'bg-cyan-400',
+		107: 'bg-gray-100'
+	};
+
+	interface AnsiState {
+		bold: boolean;
+		italic: boolean;
+		underline: boolean;
+		strikethrough: boolean;
+		fgColor: string;
+		bgColor: string;
+	}
+
+	function createDefaultState(): AnsiState {
+		return {
+			bold: false,
+			italic: false,
+			underline: false,
+			strikethrough: false,
+			fgColor: '',
+			bgColor: ''
+		};
+	}
+
+	function stateToClasses(state: AnsiState): string[] {
+		const classes: string[] = [];
+		if (state.bold) classes.push('font-bold');
+		if (state.italic) classes.push('italic');
+		if (state.underline) classes.push('underline');
+		if (state.strikethrough) classes.push('line-through');
+		if (state.fgColor) classes.push(state.fgColor);
+		if (state.bgColor) classes.push(state.bgColor);
+		return classes;
+	}
+
 	// Convert ANSI escape sequences to HTML with Tailwind classes
-	function ansiToHtml(text: string): string {
-		let result = '';
-		let currentClasses: string[] = [];
+	// Returns array of HTML strings (one per line) with state carried across lines
+	function ansiToHtmlLines(text: string): string[] {
+		const lines: string[] = [];
+		let currentLine = '';
+		let state = createDefaultState();
+		let spanOpen = false;
 		let i = 0;
 
+		// Normalize line endings
+		text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
 		while (i < text.length) {
-			// Check for ANSI escape sequence
-			if (text[i] === '\x1b' && text[i + 1] === '[') {
-				const endIndex = text.indexOf('m', i);
-				if (endIndex !== -1) {
-					const codes = text
-						.slice(i + 2, endIndex)
-						.split(';')
-						.map(Number);
-
-					for (const code of codes) {
-						if (code === 0) {
-							// Reset
-							if (currentClasses.length > 0) {
-								result += '</span>';
-								currentClasses = [];
-							}
-						} else if (code === 1) {
-							// Bold
-							if (currentClasses.length > 0) result += '</span>';
-							currentClasses.push('font-bold');
-							result += `<span class="${currentClasses.join(' ')}">`;
-						} else if (code === 4) {
-							// Underline
-							if (currentClasses.length > 0) result += '</span>';
-							currentClasses.push('underline');
-							result += `<span class="${currentClasses.join(' ')}">`;
-						} else if (ansiColors[code]) {
-							if (currentClasses.length > 0) result += '</span>';
-							currentClasses = [ansiColors[code]];
-							result += `<span class="${currentClasses.join(' ')}">`;
-						}
-					}
-
-					i = endIndex + 1;
-					continue;
+			// Check for newline
+			if (text[i] === '\n') {
+				// Close span at end of line if open
+				if (spanOpen) {
+					currentLine += '</span>';
 				}
+				lines.push(currentLine);
+				currentLine = '';
+				// Reopen span at start of next line if we have active styles
+				const classes = stateToClasses(state);
+				if (classes.length > 0) {
+					currentLine = `<span class="${classes.join(' ')}">`;
+					spanOpen = true;
+				} else {
+					spanOpen = false;
+				}
+				i++;
+				continue;
 			}
 
-			// Check for other escape sequences to skip (cursor movement, clear screen, etc.)
+			// Check for ANSI escape sequence
 			if (text[i] === '\x1b' && text[i + 1] === '[') {
-				const match = text.slice(i).match(/^\x1b\[[0-9;]*[A-Za-z]/);
+				// Find the end of the escape sequence
+				const match = text.slice(i).match(/^\x1b\[([0-9;]*)([A-Za-z])/);
 				if (match) {
+					const params = match[1];
+					const command = match[2];
+
+					if (command === 'm') {
+						// SGR (Select Graphic Rendition) - color/style codes
+						const codes = params ? params.split(';').map(Number) : [0];
+
+						for (let j = 0; j < codes.length; j++) {
+							const code = codes[j];
+
+							if (code === 0) {
+								// Reset all
+								if (spanOpen) {
+									currentLine += '</span>';
+									spanOpen = false;
+								}
+								state = createDefaultState();
+							} else if (code === 1) {
+								state.bold = true;
+							} else if (code === 3) {
+								state.italic = true;
+							} else if (code === 4) {
+								state.underline = true;
+							} else if (code === 9) {
+								state.strikethrough = true;
+							} else if (code === 22) {
+								state.bold = false;
+							} else if (code === 23) {
+								state.italic = false;
+							} else if (code === 24) {
+								state.underline = false;
+							} else if (code === 29) {
+								state.strikethrough = false;
+							} else if (code in fgColors) {
+								state.fgColor = fgColors[code];
+							} else if (code in bgColors) {
+								state.bgColor = bgColors[code];
+							} else if (code === 38 && codes[j + 1] === 5) {
+								// 256-color foreground: ESC[38;5;⟨n⟩m
+								const colorNum = codes[j + 2];
+								state.fgColor = `ansi-fg-${colorNum}`;
+								j += 2;
+							} else if (code === 48 && codes[j + 1] === 5) {
+								// 256-color background: ESC[48;5;⟨n⟩m
+								const colorNum = codes[j + 2];
+								state.bgColor = `ansi-bg-${colorNum}`;
+								j += 2;
+							}
+						}
+
+						// Close existing span if open
+						if (spanOpen) {
+							currentLine += '</span>';
+							spanOpen = false;
+						}
+
+						// Open new span if we have any styling
+						const classes = stateToClasses(state);
+						if (classes.length > 0) {
+							currentLine += `<span class="${classes.join(' ')}">`;
+							spanOpen = true;
+						}
+					}
+					// Skip other escape sequences (cursor movement, clear, etc.)
+
 					i += match[0].length;
 					continue;
 				}
@@ -90,30 +197,24 @@
 
 			// Escape HTML special characters
 			if (text[i] === '<') {
-				result += '&lt;';
+				currentLine += '&lt;';
 			} else if (text[i] === '>') {
-				result += '&gt;';
+				currentLine += '&gt;';
 			} else if (text[i] === '&') {
-				result += '&amp;';
+				currentLine += '&amp;';
 			} else {
-				result += text[i];
+				currentLine += text[i];
 			}
 			i++;
 		}
 
-		if (currentClasses.length > 0) {
-			result += '</span>';
+		// Close any remaining span and add final line
+		if (spanOpen) {
+			currentLine += '</span>';
 		}
+		lines.push(currentLine);
 
-		return result;
-	}
-
-	// Process output and split into lines
-	function processOutput(output: string): string[] {
-		// Handle carriage returns and newlines
-		const processed = output.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-		return processed.split('\n');
+		return lines;
 	}
 
 	async function playCast() {
@@ -146,11 +247,8 @@
 					// Append to buffer and process
 					buffer += data;
 
-					// Convert buffer to lines
-					const newLines = processOutput(buffer);
-
-					// Update displayed lines
-					lines = newLines.map((line) => ansiToHtml(line));
+					// Convert buffer to lines with ANSI styling preserved across lines
+					lines = ansiToHtmlLines(buffer);
 
 					// Auto-scroll to bottom
 					if (container) {
@@ -218,7 +316,7 @@
 		bind:this={container}
 		class="flex-1 overflow-y-auto overflow-x-hidden p-4 font-mono text-sm text-green-400 leading-relaxed"
 	>
-		<pre class="whitespace-pre-wrap break-words">{#each lines as line}{@html line}
-			{/each}</pre>
+		<pre class="whitespace-pre-wrap wrap-break-word">{#each lines as line}{@html line +
+					'\n'}{/each}</pre>
 	</div>
 </div>
