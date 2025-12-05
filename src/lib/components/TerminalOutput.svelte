@@ -314,7 +314,7 @@
 	<!-- Terminal content - scrollable -->
 	<div
 		bind:this={container}
-		class="flex-1 overflow-y-auto overflow-x-hidden p-4 font-mono text-sm text-green-400 leading-relaxed"
+		class="flex-1 overflow-y-auto overflow-x-hidden p-4 font-mono text-sm text-gray-200 leading-relaxed"
 	>
 		<pre class="whitespace-pre-wrap wrap-break-word">{#each lines as line}{@html line +
 					'\n'}{/each}</pre>
