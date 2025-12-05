@@ -13,8 +13,11 @@
 	});
 </script>
 
-<div class="flex flex-col items-center justify-center gap-y-4 p-8">
-	<pre class="text-center font-mono text-sm sm:text-base leading-none">{titleText}</pre>
-	<TerminalCommand command="cargo install archmap" />
-	<TerminalOutput castUrl="/demos/demo.cast" class="max-w-2xl w-full h-[500px]" />
+<div class="flex flex-col items-center h-[calc(100vh-4rem)] p-8">
+	<div class="flex flex-col items-center gap-y-4">
+		<pre class="text-center font-mono text-sm sm:text-base leading-none">{titleText}</pre>
+		<TerminalCommand command="cargo install archmap" />
+	</div>
+
+	<TerminalOutput castUrl="/demos/demo.cast" class="flex-1 max-w-2xl w-full h-128 my-16" />
 </div>
