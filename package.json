@@ -21,6 +21,8 @@
 		"vite": "^7.2.2"
 	},
 	"dependencies": {
-		"asciinema-player": "^3.12.1"
+		"@tailwindcss/vite": "^4.1.17",
+		"asciinema-player": "^3.12.1",
+		"tailwindcss": "^4.1.17"
 	}
 }
